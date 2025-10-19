@@ -6,15 +6,13 @@ import DataTable from '@/components/ui/DataTable';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { feeRecordsApi, studentsApi, classesApi } from '@/lib/api';
-import { FeeRecord, Student, Class } from '@/lib/types';
+import { feeRecordsApi, classesApi } from '@/lib/api';
+import { FeeRecord, Class } from '@/lib/types';
 import { formatCurrency, formatDate, MONTHS, getCurrentYear, getCurrentMonth } from '@/lib/utils';
 
 export default function FeeRecordsPage() {
   const [feeRecords, setFeeRecords] = useState<FeeRecord[]>([]);
-  const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<FeeRecord | null>(null);
   const [filters, setFilters] = useState({
@@ -36,20 +34,15 @@ export default function FeeRecordsPage() {
 
   const loadData = async () => {
     try {
-      setLoading(true);
-      const [recordsData, studentsData, classesData] = await Promise.all([
+      const [recordsData, classesData] = await Promise.all([
         feeRecordsApi.getAll(),
-        studentsApi.getAll(),
         classesApi.getAll(),
       ]);
       setFeeRecords(recordsData);
-      setStudents(studentsData);
       setClasses(classesData);
     } catch (error) {
       console.error('Failed to load data:', error);
       alert('Failed to load data');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -71,8 +64,9 @@ export default function FeeRecordsPage() {
       await feeRecordsApi.recordPayment(selectedRecord.id, paymentData);
       setShowPaymentModal(false);
       loadData();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to record payment');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      alert(err.response?.data?.error || 'Failed to record payment');
     }
   };
 

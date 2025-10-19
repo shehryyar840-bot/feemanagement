@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { Plus, Edit, Trash2, User, Phone, MapPin, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, User, Phone, Calendar } from 'lucide-react';
 import DataTable from '@/components/ui/DataTable';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
@@ -13,7 +13,6 @@ import { formatDate } from '@/lib/utils';
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [formData, setFormData] = useState({
@@ -38,7 +37,6 @@ export default function StudentsPage() {
 
   const loadData = async () => {
     try {
-      setLoading(true);
       const [studentsData, classesData] = await Promise.all([
         studentsApi.getAll(),
         classesApi.getAll(),
@@ -48,8 +46,6 @@ export default function StudentsPage() {
     } catch (error) {
       console.error('Failed to load data:', error);
       alert('Failed to load data');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -83,12 +79,12 @@ export default function StudentsPage() {
       phoneNumber: student.phoneNumber,
       address: student.address || '',
       admissionDate: new Date(student.admissionDate).toISOString().split('T')[0],
-      tuitionFee: (student as Student).tuitionFee || 0,
-      labFee: (student as Student).labFee || 0,
-      libraryFee: (student as Student).libraryFee || 0,
-      sportsFee: (student as Student).sportsFee || 0,
-      examFee: (student as Student).examFee || 0,
-      otherFee: (student as Student).otherFee || 0,
+      tuitionFee: student.tuitionFee || 0,
+      labFee: student.labFee || 0,
+      libraryFee: student.libraryFee || 0,
+      sportsFee: student.sportsFee || 0,
+      examFee: student.examFee || 0,
+      otherFee: student.otherFee || 0,
     });
     setShowModal(true);
   }, []);
@@ -137,11 +133,6 @@ export default function StudentsPage() {
   }, [formData.tuitionFee, formData.labFee, formData.libraryFee,
       formData.sportsFee, formData.examFee, formData.otherFee]);
 
-  // Optimized input change handlers
-  const handleInputChange = useCallback((field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  }, []);
-
   const columns = [
     {
       key: 'student',
@@ -160,7 +151,7 @@ export default function StudentsPage() {
     },
     {
       key: 'fatherName',
-      label: "Father's Name",
+      label: "Father&apos;s Name",
       render: (student: Student) => (
         <span className="text-gray-900">{student.fatherName}</span>
       ),
@@ -314,7 +305,7 @@ export default function StudentsPage() {
 
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Father's Name *
+                Father&apos;s Name *
               </label>
               <input
                 type="text"

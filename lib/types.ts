@@ -1,6 +1,6 @@
 // Database Models Types
 
-export interface Class {
+export interface Class extends Record<string, unknown> {
   id: number;
   name: string;
   description?: string;
@@ -14,7 +14,7 @@ export interface Class {
   };
 }
 
-export interface Student {
+export interface Student extends Record<string, unknown> {
   id: number;
   name: string;
   fatherName: string;
@@ -52,7 +52,7 @@ export interface FeeStructure {
   updatedAt: string;
 }
 
-export interface FeeRecord {
+export interface FeeRecord extends Record<string, unknown> {
   id: number;
   studentId: number;
   student?: Student;

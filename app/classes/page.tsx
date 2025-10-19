@@ -6,12 +6,11 @@ import DataTable from '@/components/ui/DataTable';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import { classesApi, feeStructuresApi } from '@/lib/api';
-import { Class, FeeStructure } from '@/lib/types';
+import { Class } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 
 export default function ClassesPage() {
   const [classes, setClasses] = useState<Class[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showClassModal, setShowClassModal] = useState(false);
   const [showFeeModal, setShowFeeModal] = useState(false);
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
@@ -31,14 +30,11 @@ export default function ClassesPage() {
 
   const loadClasses = async () => {
     try {
-      setLoading(true);
       const data = await classesApi.getAll();
       setClasses(data);
     } catch (error) {
       console.error('Failed to load classes:', error);
       alert('Failed to load classes');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -64,8 +60,9 @@ export default function ClassesPage() {
       }
       setShowClassModal(false);
       loadClasses();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to save class');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      alert(err.response?.data?.error || 'Failed to save class');
     }
   };
 
@@ -76,8 +73,9 @@ export default function ClassesPage() {
     try {
       await classesApi.delete(cls.id);
       loadClasses();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to delete class');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      alert(err.response?.data?.error || 'Failed to delete class');
     }
   };
 
@@ -117,8 +115,9 @@ export default function ClassesPage() {
       }
       setShowFeeModal(false);
       loadClasses();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to save fee structure');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      alert(err.response?.data?.error || 'Failed to save fee structure');
     }
   };
 

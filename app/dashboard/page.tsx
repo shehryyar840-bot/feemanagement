@@ -102,7 +102,7 @@ export default function DashboardPage() {
       {/* Page Header */}
       <div>
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
-        <p className="text-gray-600">Welcome back! Here's your fee management overview.</p>
+        <p className="text-gray-600">Welcome back! Here&apos;s your fee management overview.</p>
       </div>
 
       {/* Stats Cards */}

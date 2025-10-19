@@ -1,5 +1,3 @@
-import { type ClassValue, clsx } from 'clsx';
-
 // Currency formatter
 export function formatCurrency(amount: number): string {
   return `₹${amount.toLocaleString('en-IN', {
@@ -52,9 +50,4 @@ export function getCurrentMonth(): string {
 // Validate phone number (simple validation)
 export function isValidPhone(phone: string): boolean {
   return /^[0-9]{10,11}$/.test(phone.replace(/[\s-]/g, ''));
-}
-
-// Class name utility (if using clsx/tailwind-merge)
-export function cn(...inputs: ClassValue[]) {
-  return inputs.filter(Boolean).join(' ');
 }

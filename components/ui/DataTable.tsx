@@ -9,7 +9,7 @@ interface Column<T> {
   render?: (item: T) => React.ReactNode;
 }
 
-interface DataTableProps<T> {
+interface DataTableProps<T extends Record<string, unknown>> {
   data: T[];
   columns: Column<T>[];
   searchable?: boolean;
@@ -19,7 +19,7 @@ interface DataTableProps<T> {
   itemsPerPage?: number;
 }
 
-export default function DataTable<T extends Record<string, any>>({
+export default function DataTable<T extends Record<string, unknown>>({
   data,
   columns,
   searchable = true,

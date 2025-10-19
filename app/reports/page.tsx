@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { BarChart3, PieChart, TrendingUp, Download } from 'lucide-react';
+import { BarChart3, PieChart, TrendingUp } from 'lucide-react';
 import { dashboardApi } from '@/lib/api';
 import { MonthlyTrend, ClassWiseStats, PaymentModeStats } from '@/lib/types';
 import { formatCurrency, getCurrentYear } from '@/lib/utils';
-import { Bar, Pie, Line } from 'react-chartjs-2';
+import { Bar, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -36,30 +36,26 @@ export default function ReportsPage() {
   const [monthlyTrend, setMonthlyTrend] = useState<MonthlyTrend[]>([]);
   const [classWiseStats, setClassWiseStats] = useState<ClassWiseStats[]>([]);
   const [paymentModeStats, setPaymentModeStats] = useState<PaymentModeStats[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState(getCurrentYear());
 
   useEffect(() => {
+    const loadReports = async () => {
+      try {
+        const [monthly, classWise, paymentMode] = await Promise.all([
+          dashboardApi.getMonthlyTrend(selectedYear),
+          dashboardApi.getClassWiseStats(selectedYear),
+          dashboardApi.getPaymentModeStats(selectedYear),
+        ]);
+        setMonthlyTrend(monthly);
+        setClassWiseStats(classWise);
+        setPaymentModeStats(paymentMode);
+      } catch (error) {
+        console.error('Failed to load reports:', error);
+      }
+    };
+
     loadReports();
   }, [selectedYear]);
-
-  const loadReports = async () => {
-    try {
-      setLoading(true);
-      const [monthly, classWise, paymentMode] = await Promise.all([
-        dashboardApi.getMonthlyTrend(selectedYear),
-        dashboardApi.getClassWiseStats(selectedYear),
-        dashboardApi.getPaymentModeStats(selectedYear),
-      ]);
-      setMonthlyTrend(monthly);
-      setClassWiseStats(classWise);
-      setPaymentModeStats(paymentMode);
-    } catch (error) {
-      console.error('Failed to load reports:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Monthly Trend Chart Data
   const monthlyChartData = {
