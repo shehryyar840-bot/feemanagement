@@ -1,7 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, memo, useCallback } from 'react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,7 +11,7 @@ interface ModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-export default function Modal({
+function Modal({
   isOpen,
   onClose,
   title,
@@ -76,3 +76,5 @@ export default function Modal({
     </div>
   );
 }
+
+export default memo(Modal);

@@ -18,8 +18,6 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboardStats();
@@ -27,46 +25,28 @@ export default function DashboardPage() {
 
   const loadDashboardStats = async () => {
     try {
-      setLoading(true);
       const data = await dashboardApi.getStats();
       setStats(data);
     } catch (err) {
-      setError('Failed to load dashboard data');
-      console.error(err);
-    } finally {
-      setLoading(false);
+      console.error('Failed to load dashboard data:', err);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  // Use default values if stats not loaded yet
+  const summary = stats?.summary || {
+    totalStudents: 0,
+    totalCollected: 0,
+    totalPending: 0,
+    totalOverdue: 0,
+  };
 
-  if (error || !stats) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <p className="text-gray-600 text-lg">{error || 'No data available'}</p>
-          <button
-            onClick={loadDashboardStats}
-            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const statusBreakdown = stats?.statusBreakdown || {
+    paid: 0,
+    pending: 0,
+    overdue: 0,
+  };
 
-  const { summary, statusBreakdown, recentOverdue } = stats;
+  const recentOverdue = stats?.recentOverdue || [];
 
   // Table columns for recent overdue
   const overdueColumns = [
@@ -131,8 +111,8 @@ export default function DashboardPage() {
           title="Total Students"
           value={summary.totalStudents}
           icon={Users}
-          iconColor="text-blue-600"
-          bgColor="bg-blue-50"
+          iconColor="text-emerald-600"
+          bgColor="bg-emerald-50"
           isCurrency={false}
         />
         <StatCard
@@ -163,7 +143,7 @@ export default function DashboardPage() {
         {/* Status Summary Card */}
         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
           <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-blue-600" />
+            <TrendingUp className="w-6 h-6 text-emerald-600" />
             Payment Status Breakdown
           </h2>
           <div className="space-y-4">
@@ -235,7 +215,7 @@ export default function DashboardPage() {
         {/* Quick Actions Card */}
         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
           <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <DollarSign className="w-6 h-6 text-blue-600" />
+            <DollarSign className="w-6 h-6 text-emerald-600" />
             Financial Summary
           </h2>
           <div className="space-y-6">

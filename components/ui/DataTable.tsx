@@ -68,7 +68,7 @@ export default function DataTable<T extends Record<string, any>>({
                 setSearchTerm(e.target.value);
                 setCurrentPage(1); // Reset to first page on search
               }}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -105,7 +105,7 @@ export default function DataTable<T extends Record<string, any>>({
                   key={index}
                   onClick={() => onRowClick?.(item)}
                   className={`${
-                    onRowClick ? 'cursor-pointer hover:bg-blue-50' : ''
+                    onRowClick ? 'cursor-pointer hover:bg-emerald-50' : ''
                   } transition-colors duration-150`}
                 >
                   {columns.map((column) => (

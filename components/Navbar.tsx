@@ -9,6 +9,7 @@ import {
   Receipt,
   BarChart3,
   Wallet,
+  Grid3x3,
 } from 'lucide-react';
 
 const navigation = [
@@ -16,6 +17,7 @@ const navigation = [
   { name: 'Classes', href: '/classes', icon: GraduationCap },
   { name: 'Students', href: '/students', icon: Users },
   { name: 'Fee Records', href: '/fee-records', icon: Receipt },
+  { name: 'Class-Wise', href: '/class-wise', icon: Grid3x3 },
   { name: 'Reports', href: '/reports', icon: BarChart3 },
 ];
 
@@ -23,19 +25,19 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg">
+    <nav className="sticky top-0 z-50 bg-gradient-to-r from-emerald-600 to-emerald-700 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
           <Link href="/dashboard" className="flex items-center gap-3 group">
             <div className="bg-white p-2 rounded-lg group-hover:scale-110 transition-transform duration-200">
-              <Wallet className="h-6 w-6 text-blue-600" />
+              <Wallet className="h-6 w-6 text-emerald-600" />
             </div>
             <div className="flex flex-col">
               <span className="text-white font-bold text-xl leading-tight">
                 Fee Management
               </span>
-              <span className="text-blue-200 text-xs">System</span>
+              <span className="text-emerald-200 text-xs">System</span>
             </div>
           </Link>
 
@@ -54,8 +56,8 @@ export default function Navbar() {
                     transition-all duration-200
                     ${
                       isActive
-                        ? 'bg-white text-blue-600 shadow-md'
-                        : 'text-blue-100 hover:bg-blue-500 hover:text-white'
+                        ? 'bg-white text-emerald-600 shadow-md'
+                        : 'text-emerald-100 hover:bg-emerald-500 hover:text-white'
                     }
                   `}
                 >
@@ -70,9 +72,9 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <div className="text-right hidden sm:block">
               <p className="text-white text-sm font-medium">Admin User</p>
-              <p className="text-blue-200 text-xs">Super Admin</p>
+              <p className="text-emerald-200 text-xs">Super Admin</p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+            <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-semibold">
               A
             </div>
           </div>

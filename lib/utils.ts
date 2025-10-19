@@ -43,6 +43,12 @@ export function getCurrentYear(): number {
   return new Date().getFullYear();
 }
 
+// Get current month name
+export function getCurrentMonth(): string {
+  const monthIndex = new Date().getMonth();
+  return MONTHS[monthIndex];
+}
+
 // Validate phone number (simple validation)
 export function isValidPhone(phone: string): boolean {
   return /^[0-9]{10,11}$/.test(phone.replace(/[\s-]/g, ''));
