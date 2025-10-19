@@ -25,6 +25,13 @@ export interface Student {
   address?: string;
   admissionDate: string;
   isActive: boolean;
+  tuitionFee?: number;
+  labFee?: number;
+  libraryFee?: number;
+  sportsFee?: number;
+  examFee?: number;
+  otherFee?: number;
+  totalMonthlyFee?: number;
   feeRecords?: FeeRecord[];
   createdAt: string;
   updatedAt: string;

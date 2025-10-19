@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { GraduationCap, Users, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { GraduationCap, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { feeRecordsApi, classesApi } from '@/lib/api';
-import { FeeRecord, Class } from '@/lib/types';
+import { FeeRecord, Class, Student } from '@/lib/types';
 import { formatCurrency, getCurrentMonth, getCurrentYear, MONTHS } from '@/lib/utils';
 
 export default function ClassWisePage() {
@@ -41,9 +41,9 @@ export default function ClassWisePage() {
       const paid = classRecords.filter((r) => r.status === 'Paid');
       const pending = classRecords.filter((r) => r.status === 'Pending');
       const overdue = classRecords.filter((r) => r.status === 'Overdue');
-      const paidStudents = [...new Set(paid.map((r) => r.student))].filter(Boolean);
-      const pendingStudents = [...new Set(pending.map((r) => r.student))].filter(Boolean);
-      const overdueStudents = [...new Set(overdue.map((r) => r.student))].filter(Boolean);
+      const paidStudents = [...new Set(paid.map((r) => r.student))].filter((s): s is Student => s !== undefined && s !== null);
+      const pendingStudents = [...new Set(pending.map((r) => r.student))].filter((s): s is Student => s !== undefined && s !== null);
+      const overdueStudents = [...new Set(overdue.map((r) => r.student))].filter((s): s is Student => s !== undefined && s !== null);
 
       return {
         classId: cls.id,
@@ -241,7 +241,7 @@ export default function ClassWisePage() {
                         Students Who Paid ({classStat.paid})
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {classStat.paidStudents.map((student: any, idx: number) => (
+                        {classStat.paidStudents.map((student: Student, idx: number) => (
                           <span
                             key={idx}
                             className="px-3 py-1 bg-green-50 text-green-700 text-sm rounded-md border border-green-200"
@@ -261,7 +261,7 @@ export default function ClassWisePage() {
                         Pending Students ({classStat.pending})
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {classStat.pendingStudents.map((student: any, idx: number) => (
+                        {classStat.pendingStudents.map((student: Student, idx: number) => (
                           <span
                             key={idx}
                             className="px-3 py-1 bg-yellow-50 text-yellow-700 text-sm rounded-md border border-yellow-200"
@@ -281,7 +281,7 @@ export default function ClassWisePage() {
                         Overdue Students ({classStat.overdue})
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {classStat.overdueStudents.map((student: any, idx: number) => (
+                        {classStat.overdueStudents.map((student: Student, idx: number) => (
                           <span
                             key={idx}
                             className="px-3 py-1 bg-red-50 text-red-700 text-sm rounded-md border border-red-200"

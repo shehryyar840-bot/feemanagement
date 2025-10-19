@@ -83,12 +83,12 @@ export default function StudentsPage() {
       phoneNumber: student.phoneNumber,
       address: student.address || '',
       admissionDate: new Date(student.admissionDate).toISOString().split('T')[0],
-      tuitionFee: (student as any).tuitionFee || 0,
-      labFee: (student as any).labFee || 0,
-      libraryFee: (student as any).libraryFee || 0,
-      sportsFee: (student as any).sportsFee || 0,
-      examFee: (student as any).examFee || 0,
-      otherFee: (student as any).otherFee || 0,
+      tuitionFee: (student as Student).tuitionFee || 0,
+      labFee: (student as Student).labFee || 0,
+      libraryFee: (student as Student).libraryFee || 0,
+      sportsFee: (student as Student).sportsFee || 0,
+      examFee: (student as Student).examFee || 0,
+      otherFee: (student as Student).otherFee || 0,
     });
     setShowModal(true);
   }, []);
@@ -103,8 +103,9 @@ export default function StudentsPage() {
       }
       setShowModal(false);
       loadData();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to save student');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      alert(err.response?.data?.error || 'Failed to save student');
     }
   }, [selectedStudent, formData]);
 
@@ -119,8 +120,9 @@ export default function StudentsPage() {
     try {
       await studentsApi.delete(student.id);
       loadData();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to deactivate student');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      alert(err.response?.data?.error || 'Failed to deactivate student');
     }
   }, []);
 
