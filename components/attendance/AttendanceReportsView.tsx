@@ -80,7 +80,16 @@ export default function AttendanceReportsView() {
       // API returns students array with nested attendances
       const response = await attendanceApi.getClassAttendance(selectedClassId, selectedDate) as unknown as Array<{
         student: { name: string; rollNumber: string };
-        attendance: { id: number; status: AttendanceStatus; date: string } | null;
+        attendance: {
+          id: number;
+          status: AttendanceStatus;
+          date: string;
+          teacher?: {
+            user?: {
+              name: string;
+            };
+          };
+        } | null;
       }>;
 
       // Flatten the nested attendance records
@@ -94,7 +103,8 @@ export default function AttendanceReportsView() {
             student: {
               name: item.student.name,
               rollNumber: item.student.rollNumber
-            }
+            },
+            markedByTeacher: item.attendance.teacher
           });
         }
       });
