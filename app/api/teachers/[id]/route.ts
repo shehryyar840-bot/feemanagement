@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse, notFoundResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -12,7 +12,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return unauthorizedResponse(auth.error);
     }
 
-    const teacherId = parseInt(params.id);
+    const { id } = await params;
+    const teacherId = parseInt(id);
 
     const teacher = await prisma.teacher.findUnique({
       where: { id: teacherId },
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -60,7 +61,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return errorResponse('Only admins can update teachers', 403);
     }
 
-    const teacherId = parseInt(params.id);
+    const { id } = await params;
+    const teacherId = parseInt(id);
     const body = await request.json();
 
     // Check if teacher exists
@@ -126,7 +128,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -139,7 +141,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return errorResponse('Only admins can delete teachers', 403);
     }
 
-    const teacherId = parseInt(params.id);
+    const { id } = await params;
+    const teacherId = parseInt(id);
 
     // Check if teacher exists
     const teacher = await prisma.teacher.findUnique({

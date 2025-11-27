@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse, notFoundResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: { studentId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ studentId: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -12,11 +12,12 @@ export async function GET(request: NextRequest, { params }: { params: { studentI
       return unauthorizedResponse(auth.error);
     }
 
-    const studentId = parseInt(params.studentId);
+    const { studentId } = await params;
+    const studentIdNum = parseInt(studentId);
 
     // Check if student exists
     const student = await prisma.student.findUnique({
-      where: { id: studentId },
+      where: { id: studentIdNum },
       include: { class: true },
     });
 
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: { studentI
 
     // Get all attendance records for this student
     const attendanceRecords = await prisma.attendance.findMany({
-      where: { studentId },
+      where: { studentId: studentIdNum },
       orderBy: { date: 'desc' },
     });
 

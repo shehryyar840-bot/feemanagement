@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse, notFoundResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -17,7 +17,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return errorResponse('Only admins can permanently delete students', 403);
     }
 
-    const studentId = parseInt(params.id);
+    const { id } = await params;
+    const studentId = parseInt(id);
 
     // Check if student exists
     const student = await prisma.student.findUnique({

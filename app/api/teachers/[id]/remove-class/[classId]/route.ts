@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse, notFoundResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string; classId: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string; classId: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -17,15 +17,16 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return errorResponse('Only admins can remove class assignments', 403);
     }
 
-    const teacherId = parseInt(params.id);
-    const classId = parseInt(params.classId);
+    const { id, classId } = await params;
+    const teacherId = parseInt(id);
+    const classIdNum = parseInt(classId);
 
     // Check if assignment exists
     const assignment = await prisma.classTeacher.findUnique({
       where: {
         teacherId_classId: {
           teacherId,
-          classId,
+          classId: classIdNum,
         },
       },
     });
@@ -39,7 +40,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       where: {
         teacherId_classId: {
           teacherId,
-          classId,
+          classId: classIdNum,
         },
       },
     });

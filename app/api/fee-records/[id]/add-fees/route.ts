@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse, notFoundResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -17,7 +17,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return errorResponse('Only admins can add fees to records', 403);
     }
 
-    const feeRecordId = parseInt(params.id);
+    const { id } = await params;
+    const feeRecordId = parseInt(id);
     const body = await request.json();
     const { examFee, otherFee } = body;
 

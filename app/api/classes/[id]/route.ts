@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse, notFoundResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -12,7 +12,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return unauthorizedResponse(auth.error);
     }
 
-    const classId = parseInt(params.id);
+    const { id } = await params;
+    const classId = parseInt(id);
 
     const classData = await prisma.class.findUnique({
       where: { id: classId },
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -49,7 +50,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return errorResponse('Only admins can update classes', 403);
     }
 
-    const classId = parseInt(params.id);
+    const { id } = await params;
+    const classId = parseInt(id);
     const body = await request.json();
     const { name, description, isActive } = body;
 
@@ -89,7 +91,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -102,7 +104,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return errorResponse('Only admins can delete classes', 403);
     }
 
-    const classId = parseInt(params.id);
+    const { id } = await params;
+    const classId = parseInt(id);
 
     // Check if class exists
     const existingClass = await prisma.class.findUnique({

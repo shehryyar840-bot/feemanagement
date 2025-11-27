@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse, notFoundResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -12,7 +12,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return unauthorizedResponse(auth.error);
     }
 
-    const studentId = parseInt(params.id);
+    const { id } = await params;
+    const studentId = parseInt(id);
 
     const student = await prisma.student.findUnique({
       where: { id: studentId },
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -52,7 +53,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return errorResponse('Only admins can update students', 403);
     }
 
-    const studentId = parseInt(params.id);
+    const { id } = await params;
+    const studentId = parseInt(id);
     const body = await request.json();
 
     // Check if student exists
@@ -115,7 +117,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -128,7 +130,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return errorResponse('Only admins can delete students', 403);
     }
 
-    const studentId = parseInt(params.id);
+    const { id } = await params;
+    const studentId = parseInt(id);
 
     // Check if student exists
     const student = await prisma.student.findUnique({

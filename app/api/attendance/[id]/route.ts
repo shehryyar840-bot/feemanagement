@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse, notFoundResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -17,7 +17,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return errorResponse('Only teachers and admins can delete attendance records', 403);
     }
 
-    const attendanceId = parseInt(params.id);
+    const { id } = await params;
+    const attendanceId = parseInt(id);
 
     // Check if attendance record exists
     const attendance = await prisma.attendance.findUnique({

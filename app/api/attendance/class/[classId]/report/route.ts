@@ -5,7 +5,7 @@ import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse, notFoundResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: { classId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ classId: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -13,14 +13,15 @@ export async function GET(request: NextRequest, { params }: { params: { classId:
       return unauthorizedResponse(auth.error);
     }
 
-    const classId = parseInt(params.classId);
+    const { classId } = await params;
+    const classIdNum = parseInt(classId);
     const { searchParams } = new URL(request.url);
     const dateFrom = searchParams.get('dateFrom');
     const dateTo = searchParams.get('dateTo');
 
     // Check if class exists
     const classData = await prisma.class.findUnique({
-      where: { id: classId },
+      where: { id: classIdNum },
     });
 
     if (!classData) {
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest, { params }: { params: { classId:
     // Get all students in the class
     const students = await prisma.student.findMany({
       where: {
-        classId,
+        classId: classIdNum,
         isActive: true,
       },
       include: {

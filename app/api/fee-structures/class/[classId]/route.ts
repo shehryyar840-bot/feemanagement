@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse, notFoundResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: { classId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ classId: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -12,10 +12,11 @@ export async function GET(request: NextRequest, { params }: { params: { classId:
       return unauthorizedResponse(auth.error);
     }
 
-    const classId = parseInt(params.classId);
+    const { classId } = await params;
+    const classIdNum = parseInt(classId);
 
     const feeStructure = await prisma.feeStructure.findUnique({
-      where: { classId },
+      where: { classId: classIdNum },
       include: {
         class: true,
       },

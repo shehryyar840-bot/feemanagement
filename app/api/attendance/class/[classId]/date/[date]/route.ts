@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: { classId: string; date: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ classId: string; date: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -12,13 +12,14 @@ export async function GET(request: NextRequest, { params }: { params: { classId:
       return unauthorizedResponse(auth.error);
     }
 
-    const classId = parseInt(params.classId);
-    const date = new Date(params.date);
+    const { classId, date } = await params;
+    const classIdNum = parseInt(classId);
+    const dateObj = new Date(date);
 
     // Get all students in the class
     const students = await prisma.student.findMany({
       where: {
-        classId,
+        classId: classIdNum,
         isActive: true,
       },
       include: {
@@ -31,11 +32,11 @@ export async function GET(request: NextRequest, { params }: { params: { classId:
     const attendanceRecords = await prisma.attendance.findMany({
       where: {
         student: {
-          classId,
+          classId: classIdNum,
         },
         date: {
-          gte: new Date(date.setHours(0, 0, 0, 0)),
-          lt: new Date(date.setHours(23, 59, 59, 999)),
+          gte: new Date(dateObj.setHours(0, 0, 0, 0)),
+          lt: new Date(dateObj.setHours(23, 59, 59, 999)),
         },
       },
       include: {

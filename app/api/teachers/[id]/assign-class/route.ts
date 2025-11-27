@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse, notFoundResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const auth = await authenticateRequest(request);
 
@@ -17,7 +17,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return errorResponse('Only admins can assign classes to teachers', 403);
     }
 
-    const teacherId = parseInt(params.id);
+    const { id } = await params;
+    const teacherId = parseInt(id);
     const body = await request.json();
     const { classId, subject, isPrimary } = body;
 
