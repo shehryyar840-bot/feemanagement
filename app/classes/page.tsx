@@ -37,6 +37,7 @@ export default function ClassesPage() {
 
   useEffect(() => {
     loadClasses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadClasses = async () => {

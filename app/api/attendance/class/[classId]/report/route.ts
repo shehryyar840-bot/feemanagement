@@ -1,5 +1,6 @@
 // app/api/attendance/class/[classId]/report/route.ts
 import { NextRequest } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse, notFoundResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: { classId:
     }
 
     // Build date filter
-    const dateFilter: any = {};
+    const dateFilter: Prisma.DateTimeFilter = {};
     if (dateFrom) {
       dateFilter.gte = new Date(dateFrom);
     }

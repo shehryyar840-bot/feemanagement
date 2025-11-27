@@ -1,5 +1,6 @@
 // app/api/fee-records/generate/route.ts
 import { NextRequest } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get students based on classId filter
-    const where: any = { isActive: true };
+    const where: Prisma.StudentWhereInput = { isActive: true };
     if (classId) {
       where.classId = classId;
     }

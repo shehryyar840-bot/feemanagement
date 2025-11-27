@@ -1,5 +1,6 @@
 // app/api/dashboard/payment-modes/route.ts
 import { NextRequest } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
     const year = searchParams.get('year');
 
     // Build where clause
-    const where: any = {
+    const where: Prisma.FeeRecordWhereInput = {
       status: 'Paid',
       paymentMode: { not: null },
     };

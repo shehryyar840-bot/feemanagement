@@ -1,5 +1,6 @@
 // app/api/fee-records/route.ts
 import { NextRequest } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const classId = searchParams.get('classId');
 
-    const where: any = {};
+    const where: Prisma.FeeRecordWhereInput = {};
 
     if (studentId) {
       where.studentId = parseInt(studentId);

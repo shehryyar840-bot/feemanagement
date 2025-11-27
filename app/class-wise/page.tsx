@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { GraduationCap, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { feeRecordsApi, classesApi } from '@/lib/api';
 import { FeeRecord, Class, Student } from '@/lib/types';
@@ -12,11 +12,7 @@ export default function ClassWisePage() {
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
   const [selectedYear, setSelectedYear] = useState(getCurrentYear());
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [recordsData, classesData] = await Promise.all([
         feeRecordsApi.getAll(),
@@ -27,7 +23,11 @@ export default function ClassWisePage() {
     } catch (error) {
       console.error('Failed to load data:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Filter records by selected month and year
   const filteredRecords = feeRecords.filter(

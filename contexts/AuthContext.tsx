@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const userData = await authApi.getProfile();
       setUser(userData);
-    } catch (error) {
+    } catch {
       // Token invalid, clear it
       localStorage.removeItem('token');
       setUser(null);

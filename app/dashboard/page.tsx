@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Wallet,
   Clock,
@@ -19,18 +19,18 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
 
-  useEffect(() => {
-    loadDashboardStats();
-  }, []);
-
-  const loadDashboardStats = async () => {
+  const loadDashboardStats = useCallback(async () => {
     try {
       const data = await dashboardApi.getStats();
       setStats(data);
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadDashboardStats();
+  }, [loadDashboardStats]);
 
   // Use default values if stats not loaded yet
   const summary = stats?.summary || {
