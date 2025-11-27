@@ -34,14 +34,14 @@ export async function GET(request: NextRequest) {
 
     if (dateFrom) {
       where.date = {
-        ...where.date,
+        ...(where.date || {}),
         gte: new Date(dateFrom),
       };
     }
 
     if (dateTo) {
       where.date = {
-        ...where.date,
+        ...(where.date || {}),
         lte: new Date(dateTo),
       };
     }
