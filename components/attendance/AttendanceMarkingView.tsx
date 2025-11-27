@@ -47,6 +47,7 @@ export default function AttendanceMarkingView() {
     if (selectedClassId && selectedDate) {
       loadExistingAttendance();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedClassId, selectedDate, students.length]);
 
   const loadClasses = async () => {
@@ -81,27 +82,28 @@ export default function AttendanceMarkingView() {
 
     try {
       // API returns students array with nested attendances
-      const studentsWithAttendance = await attendanceApi.getClassAttendance(selectedClassId, selectedDate);
-      const attendanceMap = new Map<number, AttendanceStatus>();
+      const response = await attendanceApi.getClassAttendance(selectedClassId, selectedDate) as unknown as Array<{
+        student: Student;
+        attendance: { status: AttendanceStatus; studentId: number } | null;
+      }>;
 
-      // Flatten the nested attendance records
-      const attendanceRecords: any[] = [];
-      studentsWithAttendance.forEach((student: any) => {
-        if (student.attendances && student.attendances.length > 0) {
-          student.attendances.forEach((record: any) => {
-            attendanceRecords.push(record);
-            attendanceMap.set(record.studentId, record.status);
-          });
+      const attendanceMap = new Map<number, AttendanceStatus>();
+      let recordCount = 0;
+
+      response.forEach((item) => {
+        if (item.attendance) {
+          attendanceMap.set(item.attendance.studentId, item.attendance.status);
+          recordCount++;
         }
       });
 
       setAttendance(attendanceMap);
 
       // Only mark as already marked if ALL students have attendance records
-      const allStudentsMarked = students.length > 0 && attendanceRecords.length === students.length;
+      const allStudentsMarked = students.length > 0 && recordCount === students.length;
       console.log('Attendance check:', {
         studentsCount: students.length,
-        recordsCount: attendanceRecords.length,
+        recordsCount: recordCount,
         isMarked: allStudentsMarked,
         date: selectedDate
       });

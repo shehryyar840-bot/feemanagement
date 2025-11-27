@@ -3,13 +3,28 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Users, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
 import { attendanceApi, classesApi } from '@/lib/api';
-import type { Class, ClassAttendanceReport } from '@/lib/types';
+import type { Class, ClassAttendanceReport, AttendanceStatus } from '@/lib/types';
 
 type ViewMode = 'daily' | 'monthly' | 'classwise';
 
 interface Toast {
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
+}
+
+interface DailyAttendanceRecord {
+  id: number;
+  status: AttendanceStatus;
+  date: string;
+  student: {
+    name: string;
+    rollNumber: string;
+  };
+  markedByTeacher?: {
+    user?: {
+      name: string;
+    };
+  };
 }
 
 export default function AttendanceReportsView() {
@@ -19,7 +34,7 @@ export default function AttendanceReportsView() {
     new Date().toISOString().split('T')[0]
   );
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
-  const [dailyRecords, setDailyRecords] = useState<any[]>([]);
+  const [dailyRecords, setDailyRecords] = useState<DailyAttendanceRecord[]>([]);
   const [classReport, setClassReport] = useState<ClassAttendanceReport[]>([]);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
@@ -31,6 +46,7 @@ export default function AttendanceReportsView() {
 
   useEffect(() => {
     loadClasses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -41,6 +57,7 @@ export default function AttendanceReportsView() {
         loadClassReport();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedClassId, selectedDate, viewMode]);
 
   const loadClasses = async () => {
@@ -61,21 +78,23 @@ export default function AttendanceReportsView() {
     setLoading(true);
     try {
       // API returns students array with nested attendances
-      const studentsWithAttendance = await attendanceApi.getClassAttendance(selectedClassId, selectedDate);
+      const response = await attendanceApi.getClassAttendance(selectedClassId, selectedDate) as unknown as Array<{
+        student: { name: string; rollNumber: string };
+        attendance: { id: number; status: AttendanceStatus; date: string } | null;
+      }>;
 
       // Flatten the nested attendance records
-      const attendanceRecords: any[] = [];
-      studentsWithAttendance.forEach((student: any) => {
-        if (student.attendances && student.attendances.length > 0) {
-          student.attendances.forEach((record: any) => {
-            // Add student info to the record for display
-            attendanceRecords.push({
-              ...record,
-              student: {
-                name: student.name,
-                rollNumber: student.rollNumber
-              }
-            });
+      const attendanceRecords: DailyAttendanceRecord[] = [];
+      response.forEach((item) => {
+        if (item.attendance) {
+          attendanceRecords.push({
+            id: item.attendance.id,
+            status: item.attendance.status,
+            date: item.attendance.date,
+            student: {
+              name: item.student.name,
+              rollNumber: item.student.rollNumber
+            }
           });
         }
       });
