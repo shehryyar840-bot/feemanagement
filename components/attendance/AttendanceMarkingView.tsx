@@ -35,12 +35,14 @@ export default function AttendanceMarkingView() {
 
   useEffect(() => {
     loadClasses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (selectedClassId) {
       loadStudents();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedClassId]);
 
   useEffect(() => {
