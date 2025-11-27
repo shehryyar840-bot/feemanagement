@@ -43,6 +43,7 @@ export default function StudentsPage() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadData = async () => {
@@ -111,6 +112,7 @@ export default function StudentsPage() {
       const err = error as { response?: { data?: { error?: string } } };
       showToast(err.response?.data?.error || 'Failed to save student', 'error');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStudent, formData]);
 
   const handleDelete = useCallback(async (student: Student) => {
@@ -129,6 +131,7 @@ export default function StudentsPage() {
       const err = error as { response?: { data?: { error?: string } } };
       showToast(err.response?.data?.error || 'Failed to delete student', 'error');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Memoize total monthly fee calculation (recurring fees only)

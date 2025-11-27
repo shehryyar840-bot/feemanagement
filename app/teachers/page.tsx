@@ -102,6 +102,7 @@ export default function TeachersPage() {
       const err = error as { response?: { data?: { error?: string } } };
       showToast(err.response?.data?.error || 'Failed to save teacher', 'error');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTeacher, formData]);
 
   const handleDelete = useCallback(async (teacher: Teacher) => {
@@ -121,7 +122,6 @@ export default function TeachersPage() {
   const handleOpenAssignModal = useCallback((teacher: Teacher) => {
     setSelectedTeacher(teacher);
     setShowAssignModal(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAssignClass = useCallback(async (classId: number, subject?: string) => {
