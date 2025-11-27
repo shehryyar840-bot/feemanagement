@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { DollarSign, Filter, Receipt, CheckCircle } from 'lucide-react';
+import { DollarSign, Filter, Receipt, CheckCircle, Plus } from 'lucide-react';
 import DataTable from '@/components/ui/DataTable';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
@@ -10,11 +10,18 @@ import { feeRecordsApi, classesApi } from '@/lib/api';
 import { FeeRecord, Class } from '@/lib/types';
 import { formatCurrency, formatDate, MONTHS, getCurrentYear, getCurrentMonth } from '@/lib/utils';
 
+interface Toast {
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+}
+
 export default function FeeRecordsPage() {
   const [feeRecords, setFeeRecords] = useState<FeeRecord[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<FeeRecord | null>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
   const [filters, setFilters] = useState({
     status: 'all',
     month: getCurrentMonth(), // Default to current month
@@ -27,6 +34,19 @@ export default function FeeRecordsPage() {
     paymentMode: 'Cash' as 'Cash' | 'Online' | 'Cheque',
     remarks: '',
   });
+  const [generateData, setGenerateData] = useState({
+    month: getCurrentMonth(),
+    year: getCurrentYear(),
+    classId: 'all',
+    dueDate: '',
+    examFee: 0,
+    otherFee: 0,
+  });
+
+  const showToast = (message: string, type: Toast['type']) => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   useEffect(() => {
     loadData();
@@ -42,7 +62,7 @@ export default function FeeRecordsPage() {
       setClasses(classesData);
     } catch (error) {
       console.error('Failed to load data:', error);
-      alert('Failed to load data');
+      showToast('Failed to load data', 'error');
     }
   };
 
@@ -63,10 +83,33 @@ export default function FeeRecordsPage() {
     try {
       await feeRecordsApi.recordPayment(selectedRecord.id, paymentData);
       setShowPaymentModal(false);
+      showToast('Payment recorded successfully', 'success');
       loadData();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
-      alert(err.response?.data?.error || 'Failed to record payment');
+      showToast(err.response?.data?.error || 'Failed to record payment', 'error');
+    }
+  };
+
+  const handleGenerateFees = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const result = await feeRecordsApi.generateMonthlyFees({
+        month: generateData.month,
+        year: generateData.year,
+        classId: generateData.classId !== 'all' ? parseInt(generateData.classId) : undefined,
+        dueDate: generateData.dueDate || undefined,
+        examFee: generateData.examFee,
+        otherFee: generateData.otherFee,
+      });
+
+      setShowGenerateModal(false);
+      showToast(`Generated ${result.created.length} fee record(s). Skipped ${result.skipped.length} existing record(s).`, 'success');
+      loadData();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      showToast(err.response?.data?.error || 'Failed to generate fee records', 'error');
     }
   };
 
@@ -205,6 +248,9 @@ export default function FeeRecordsPage() {
             {filters.month !== 'all' && ' (change month to view previous records)'}
           </p>
         </div>
+        <Button onClick={() => setShowGenerateModal(true)} icon={Plus}>
+          Generate Monthly Fees
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -487,6 +533,214 @@ export default function FeeRecordsPage() {
           </form>
         )}
       </Modal>
+
+      {/* Generate Monthly Fees Modal */}
+      <Modal
+        isOpen={showGenerateModal}
+        onClose={() => setShowGenerateModal(false)}
+        title="Generate Monthly Fee Records"
+        size="lg"
+      >
+        <form onSubmit={handleGenerateFees} className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-blue-800">
+              <strong>How it works:</strong> This will create fee records for all active students (or selected class) for the specified month.
+              Recurring fees (tuition, lab, library, sports) are automatically included.
+              You can optionally add one-time fees (exam, books, paper fund) that will be applied to all students in the selected scope.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Month *
+              </label>
+              <select
+                required
+                value={generateData.month}
+                onChange={(e) => setGenerateData({ ...generateData, month: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              >
+                {MONTHS.map((month) => (
+                  <option key={month} value={month}>
+                    {month}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Year *
+              </label>
+              <input
+                type="number"
+                required
+                min="2020"
+                max="2100"
+                value={generateData.year}
+                onChange={(e) => setGenerateData({ ...generateData, year: parseInt(e.target.value) })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Class (Optional)
+              </label>
+              <select
+                value={generateData.classId}
+                onChange={(e) => setGenerateData({ ...generateData, classId: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="all">All Active Students</option>
+                {classes.map((cls) => (
+                  <option key={cls.id} value={cls.id}>
+                    {cls.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Due Date (Optional)
+              </label>
+              <input
+                type="date"
+                value={generateData.dueDate}
+                onChange={(e) => setGenerateData({ ...generateData, dueDate: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                placeholder="Defaults to 10th of the month"
+              />
+            </div>
+          </div>
+
+          <div className="border-t pt-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              One-Time Fees (Optional)
+            </h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Add one-time fees that will be applied to all students in the selected scope (e.g., exam fee, books, paper fund).
+            </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Exam Fee / Test Fee
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={generateData.examFee}
+                  onChange={(e) => setGenerateData({ ...generateData, examFee: parseFloat(e.target.value) || 0 })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Other Fee (Books / Paper Fund / etc.)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={generateData.otherFee}
+                  onChange={(e) => setGenerateData({ ...generateData, otherFee: parseFloat(e.target.value) || 0 })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button type="submit" className="flex-1">
+              Generate Fee Records
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowGenerateModal(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 transition-all duration-300 ease-in-out">
+          <div
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border-l-4 min-w-[300px] max-w-md ${
+              toast.type === 'success'
+                ? 'bg-emerald-50 border-emerald-500 text-emerald-900'
+                : toast.type === 'error'
+                ? 'bg-red-50 border-red-500 text-red-900'
+                : toast.type === 'warning'
+                ? 'bg-amber-50 border-amber-500 text-amber-900'
+                : 'bg-blue-50 border-blue-500 text-blue-900'
+            }`}
+          >
+            <div className="flex-shrink-0">
+              {toast.type === 'success' && (
+                <svg className="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+              {toast.type === 'error' && (
+                <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+              {toast.type === 'warning' && (
+                <svg className="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+              {toast.type === 'info' && (
+                <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+            </div>
+            <p className="flex-1 text-sm font-medium">{toast.message}</p>
+            <button
+              onClick={() => setToast(null)}
+              className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

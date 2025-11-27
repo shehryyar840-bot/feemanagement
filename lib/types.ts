@@ -18,6 +18,7 @@ export interface Student extends Record<string, unknown> {
   id: number;
   name: string;
   fatherName: string;
+  dateOfBirth?: string;
   classId: number;
   class?: Class;
   rollNumber: string;
@@ -138,6 +139,7 @@ export interface CreateClassData {
 export interface CreateStudentData {
   name: string;
   fatherName: string;
+  dateOfBirth?: string;
   classId: number;
   rollNumber: string;
   phoneNumber: string;
@@ -148,6 +150,7 @@ export interface CreateStudentData {
 export interface UpdateStudentData {
   name?: string;
   fatherName?: string;
+  dateOfBirth?: string;
   classId?: number;
   phoneNumber?: string;
   address?: string;
@@ -168,4 +171,143 @@ export interface RecordPaymentData {
   amountPaid: number;
   paymentMode: 'Cash' | 'Online' | 'Cheque';
   remarks?: string;
+}
+
+// Authentication & User Types
+
+export type Role = 'ADMIN' | 'TEACHER';
+
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  role: Role;
+  isActive: boolean;
+  teacher?: Teacher;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Teacher extends Record<string, unknown> {
+  id: number;
+  userId: number;
+  user?: User;
+  employeeId: string;
+  phoneNumber: string;
+  address?: string;
+  qualification?: string;
+  joiningDate: string;
+  classTeachers?: ClassTeacher[];
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    attendances: number;
+  };
+}
+
+export interface ClassTeacher {
+  id: number;
+  teacherId: number;
+  teacher?: Teacher;
+  classId: number;
+  class?: Class;
+  subject?: string;
+  isPrimary: boolean;
+  createdAt: string;
+}
+
+// Attendance Types
+
+export type AttendanceStatus = 'PRESENT' | 'ABSENT';
+
+export interface Attendance {
+  id: number;
+  studentId: number;
+  student?: Student;
+  date: string;
+  status: AttendanceStatus;
+  markedBy: number;
+  teacher?: Teacher;
+  remarks?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AttendanceSummary {
+  total: number;
+  present: number;
+  absent: number;
+  percentage: number;
+}
+
+export interface StudentAttendanceSummary {
+  summary: AttendanceSummary;
+  records: Attendance[];
+}
+
+export interface ClassAttendanceReport {
+  studentId: number;
+  name: string;
+  rollNumber: string;
+  total: number;
+  present: number;
+  absent: number;
+  percentage: number;
+}
+
+// Auth Form Types
+
+export interface LoginData {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  user: User;
+  token: string;
+}
+
+export interface CreateTeacherData {
+  email: string;
+  password: string;
+  name: string;
+  employeeId: string;
+  phoneNumber: string;
+  address?: string;
+  qualification?: string;
+  joiningDate?: string;
+}
+
+export interface UpdateTeacherData {
+  name?: string;
+  phoneNumber?: string;
+  address?: string;
+  qualification?: string;
+  isActive?: boolean;
+}
+
+export interface AssignClassData {
+  classId: number;
+  subject?: string;
+  isPrimary?: boolean;
+}
+
+export interface MarkAttendanceData {
+  studentId: number;
+  date: string;
+  status: AttendanceStatus;
+  remarks?: string;
+}
+
+export interface BulkAttendanceRecord {
+  studentId: number;
+  status: AttendanceStatus;
+  remarks?: string;
+}
+
+export interface BulkMarkAttendanceData {
+  classId?: number;
+  date: string;
+  records?: BulkAttendanceRecord[];
+  attendanceRecords?: BulkAttendanceRecord[];
 }

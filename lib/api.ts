@@ -14,6 +14,19 @@ import type {
   UpdateStudentData,
   CreateFeeStructureData,
   RecordPaymentData,
+  LoginData,
+  LoginResponse,
+  User,
+  Teacher,
+  CreateTeacherData,
+  UpdateTeacherData,
+  AssignClassData,
+  ClassTeacher,
+  Attendance,
+  MarkAttendanceData,
+  BulkMarkAttendanceData,
+  StudentAttendanceSummary,
+  ClassAttendanceReport,
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
@@ -25,6 +38,160 @@ const api = axios.create({
     'ngrok-skip-browser-warning': 'true', // Skip ngrok browser warning
   },
 });
+
+// Add auth token to requests
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
+// Authentication API
+export const authApi = {
+  login: async (credentials: LoginData): Promise<LoginResponse> => {
+    const { data } = await api.post<ApiResponse<LoginResponse>>('/auth/login', credentials);
+    if (!data.data) throw new Error('Login failed');
+    return data.data;
+  },
+
+  logout: async (): Promise<void> => {
+    await api.post('/auth/logout');
+  },
+
+  getProfile: async (): Promise<User> => {
+    const { data } = await api.get<ApiResponse<User>>('/auth/profile');
+    if (!data.data) throw new Error('Failed to fetch profile');
+    return data.data;
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
+    await api.post('/auth/change-password', { currentPassword, newPassword });
+  },
+
+  register: async (userData: CreateTeacherData): Promise<User> => {
+    const { data } = await api.post<ApiResponse<User>>('/auth/register', {
+      ...userData,
+      role: 'TEACHER',
+      teacherData: {
+        employeeId: userData.employeeId,
+        phoneNumber: userData.phoneNumber,
+        address: userData.address,
+        qualification: userData.qualification,
+        joiningDate: userData.joiningDate,
+      },
+    });
+    if (!data.data) throw new Error('Failed to register user');
+    return data.data;
+  },
+};
+
+// Teachers API
+export const teachersApi = {
+  getAll: async (): Promise<Teacher[]> => {
+    const { data } = await api.get<ApiResponse<Teacher[]>>('/teachers');
+    return data.data || [];
+  },
+
+  getById: async (id: number): Promise<Teacher> => {
+    const { data } = await api.get<ApiResponse<Teacher>>(`/teachers/${id}`);
+    if (!data.data) throw new Error('Teacher not found');
+    return data.data;
+  },
+
+  create: async (teacherData: CreateTeacherData): Promise<User> => {
+    const { data } = await api.post<ApiResponse<User>>('/teachers', teacherData);
+    if (!data.data) throw new Error('Failed to create teacher');
+    return data.data;
+  },
+
+  update: async (id: number, teacherData: UpdateTeacherData): Promise<Teacher> => {
+    const { data } = await api.put<ApiResponse<Teacher>>(`/teachers/${id}`, teacherData);
+    if (!data.data) throw new Error('Failed to update teacher');
+    return data.data;
+  },
+
+  delete: async (id: number): Promise<void> => {
+    await api.delete(`/teachers/${id}`);
+  },
+
+  assignToClass: async (id: number, assignData: AssignClassData): Promise<ClassTeacher> => {
+    const { data } = await api.post<ApiResponse<ClassTeacher>>(`/teachers/${id}/assign-class`, assignData);
+    if (!data.data) throw new Error('Failed to assign teacher to class');
+    return data.data;
+  },
+
+  removeFromClass: async (id: number, classId: number): Promise<void> => {
+    await api.delete(`/teachers/${id}/remove-class/${classId}`);
+  },
+
+  getAssignedClasses: async (id: number): Promise<ClassTeacher[]> => {
+    const { data } = await api.get<ApiResponse<ClassTeacher[]>>(`/teachers/${id}/classes`);
+    return data.data || [];
+  },
+
+  getMyClasses: async (): Promise<ClassTeacher[]> => {
+    const { data } = await api.get<ApiResponse<ClassTeacher[]>>('/teachers/my-classes');
+    return data.data || [];
+  },
+};
+
+// Attendance API
+export const attendanceApi = {
+  getAll: async (params?: {
+    classId?: number;
+    studentId?: number;
+    date?: string;
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<Attendance[]> => {
+    const { data } = await api.get<ApiResponse<Attendance[]>>('/attendance', { params });
+    return data.data || [];
+  },
+
+  getClassAttendance: async (classId: number, date: string): Promise<Student[]> => {
+    const { data } = await api.get<ApiResponse<Student[]>>(`/attendance/class/${classId}/date/${date}`);
+    return data.data || [];
+  },
+
+  markAttendance: async (attendanceData: MarkAttendanceData): Promise<Attendance> => {
+    const { data } = await api.post<ApiResponse<Attendance>>('/attendance/mark', attendanceData);
+    if (!data.data) throw new Error('Failed to mark attendance');
+    return data.data;
+  },
+
+  bulkMarkAttendance: async (bulkData: BulkMarkAttendanceData): Promise<Attendance[]> => {
+    const { data } = await api.post<ApiResponse<Attendance[]>>('/attendance/bulk-mark', bulkData);
+    return data.data || [];
+  },
+
+  bulkMark: async (bulkData: BulkMarkAttendanceData): Promise<Attendance[]> => {
+    return attendanceApi.bulkMarkAttendance(bulkData);
+  },
+
+  getStudentSummary: async (studentId: number, startDate?: string, endDate?: string): Promise<StudentAttendanceSummary> => {
+    const { data } = await api.get<ApiResponse<StudentAttendanceSummary>>(`/attendance/student/${studentId}/summary`, {
+      params: { startDate, endDate },
+    });
+    if (!data.data) throw new Error('Failed to fetch student summary');
+    return data.data;
+  },
+
+  getClassReport: async (classId: number, startDate?: string, endDate?: string): Promise<ClassAttendanceReport[]> => {
+    const { data } = await api.get<ApiResponse<ClassAttendanceReport[]>>(`/attendance/class/${classId}/report`, {
+      params: { startDate, endDate },
+    });
+    return data.data || [];
+  },
+
+  delete: async (id: number): Promise<void> => {
+    await api.delete(`/attendance/${id}`);
+  },
+};
 
 // Classes API
 export const classesApi = {
@@ -162,6 +329,30 @@ export const feeRecordsApi = {
 
   updateOverdue: async (): Promise<void> => {
     await api.post('/fee-records/update-overdue');
+  },
+
+  generateMonthlyFees: async (data: {
+    month: string;
+    year: number;
+    classId?: number;
+    studentIds?: number[];
+    dueDate?: string;
+    examFee?: number;
+    otherFee?: number;
+  }): Promise<{ created: FeeRecord[]; skipped: any[] }> => {
+    const response = await api.post<ApiResponse<{ created: FeeRecord[]; skipped: any[] }>>('/fee-records/generate', data);
+    if (!response.data.data) throw new Error('Failed to generate fee records');
+    return response.data.data;
+  },
+
+  addOneTimeFees: async (id: number, data: {
+    examFee?: number;
+    otherFee?: number;
+    remarks?: string;
+  }): Promise<FeeRecord> => {
+    const response = await api.post<ApiResponse<FeeRecord>>(`/fee-records/${id}/add-fees`, data);
+    if (!response.data.data) throw new Error('Failed to add one-time fees');
+    return response.data.data;
   },
 };
 

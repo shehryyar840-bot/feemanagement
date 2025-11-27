@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard,
   Users,
@@ -10,26 +11,46 @@ import {
   BarChart3,
   Wallet,
   Grid3x3,
+  UserCheck,
+  ClipboardList,
+  LogOut,
 } from 'lucide-react';
-
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Classes', href: '/classes', icon: GraduationCap },
-  { name: 'Students', href: '/students', icon: Users },
-  { name: 'Fee Records', href: '/fee-records', icon: Receipt },
-  { name: 'Class-Wise', href: '/class-wise', icon: Grid3x3 },
-  { name: 'Reports', href: '/reports', icon: BarChart3 },
-];
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { user, logout, isAdmin } = useAuth();
+
+  // Navigation items based on role
+  const adminNavigation = [
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Classes', href: '/classes', icon: GraduationCap },
+    { name: 'Students', href: '/students', icon: Users },
+    { name: 'Teachers', href: '/teachers', icon: UserCheck },
+    { name: 'Attendance', href: '/attendance', icon: ClipboardList },
+    { name: 'Fee Records', href: '/fee-records', icon: Receipt },
+    { name: 'Class-Wise', href: '/class-wise', icon: Grid3x3 },
+    { name: 'Reports', href: '/reports', icon: BarChart3 },
+  ];
+
+  const teacherNavigation = [
+    { name: 'My Classes', href: '/my-classes', icon: GraduationCap },
+    { name: 'Students', href: '/students', icon: Users },
+    { name: 'Attendance', href: '/attendance', icon: ClipboardList },
+  ];
+
+  const navigation = isAdmin ? adminNavigation : teacherNavigation;
+
+  if (!user) return null;
 
   return (
     <nav className="sticky top-0 z-50 bg-gradient-to-r from-emerald-600 to-emerald-700 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
-          <Link href="/dashboard" className="flex items-center gap-3 group">
+          <Link
+            href={isAdmin ? '/dashboard' : '/attendance'}
+            className="flex items-center gap-3 group"
+          >
             <div className="bg-white p-2 rounded-lg group-hover:scale-110 transition-transform duration-200">
               <Wallet className="h-6 w-6 text-emerald-600" />
             </div>
@@ -68,15 +89,25 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* User Info (Optional) */}
-          <div className="flex items-center gap-2">
+          {/* User Info & Logout */}
+          <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
-              <p className="text-white text-sm font-medium">Admin User</p>
-              <p className="text-emerald-200 text-xs">Super Admin</p>
+              <p className="text-white text-sm font-medium">{user.name}</p>
+              <p className="text-emerald-200 text-xs">
+                {user.role === 'ADMIN' ? 'Administrator' : 'Teacher'}
+              </p>
             </div>
             <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-semibold">
-              A
+              {user.name.charAt(0).toUpperCase()}
             </div>
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-emerald-100 hover:bg-emerald-500 hover:text-white transition-all duration-200"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="hidden lg:inline">Logout</span>
+            </button>
           </div>
         </div>
       </div>
