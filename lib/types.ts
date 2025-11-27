@@ -311,3 +311,9 @@ export interface BulkMarkAttendanceData {
   records?: BulkAttendanceRecord[];
   attendanceRecords?: BulkAttendanceRecord[];
 }
+
+export interface SkippedRecord {
+  studentId: number;
+  studentName: string;
+  reason: string;
+}

@@ -27,6 +27,7 @@ import type {
   BulkMarkAttendanceData,
   StudentAttendanceSummary,
   ClassAttendanceReport,
+  SkippedRecord,
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
@@ -339,8 +340,8 @@ export const feeRecordsApi = {
     dueDate?: string;
     examFee?: number;
     otherFee?: number;
-  }): Promise<{ created: FeeRecord[]; skipped: any[] }> => {
-    const response = await api.post<ApiResponse<{ created: FeeRecord[]; skipped: any[] }>>('/fee-records/generate', data);
+  }): Promise<{ created: FeeRecord[]; skipped: SkippedRecord[] }> => {
+    const response = await api.post<ApiResponse<{ created: FeeRecord[]; skipped: SkippedRecord[] }>>('/fee-records/generate', data);
     if (!response.data.data) throw new Error('Failed to generate fee records');
     return response.data.data;
   },

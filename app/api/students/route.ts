@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const classId = searchParams.get('classId');
     const isActive = searchParams.get('isActive');
 
-    const where: any = {};
+    const where: { classId?: number; isActive?: boolean } = {};
 
     if (classId) {
       where.classId = parseInt(classId);

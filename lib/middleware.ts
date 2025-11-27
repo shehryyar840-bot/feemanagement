@@ -1,6 +1,6 @@
 // lib/middleware.ts - Authentication middleware for API routes
 import { NextRequest } from 'next/server';
-import { extractToken, verifyToken, JWTPayload } from './auth';
+import { extractToken, verifyToken } from './auth';
 import prisma from './prisma';
 
 export interface AuthenticatedRequest extends NextRequest {
