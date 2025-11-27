@@ -32,18 +32,16 @@ export async function GET(request: NextRequest) {
       where.studentId = parseInt(studentId);
     }
 
-    if (dateFrom) {
-      where.date = {
-        ...(where.date || {}),
-        gte: new Date(dateFrom),
-      };
-    }
-
-    if (dateTo) {
-      where.date = {
-        ...(where.date || {}),
-        lte: new Date(dateTo),
-      };
+    // Build date filter
+    if (dateFrom || dateTo) {
+      const dateFilter: Prisma.DateTimeFilter = {};
+      if (dateFrom) {
+        dateFilter.gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        dateFilter.lte = new Date(dateTo);
+      }
+      where.date = dateFilter;
     }
 
     if (status) {
