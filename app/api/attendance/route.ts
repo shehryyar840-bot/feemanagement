@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (status) {
-      where.status = status;
+      where.status = status as Prisma.AttendanceStatus;
     }
 
     const attendance = await prisma.attendance.findMany({
