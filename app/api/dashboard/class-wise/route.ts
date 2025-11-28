@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
     const classes = await prisma.class.findMany({
       where: { isActive: true },
       include: {
+        feeStructure: true,
         students: {
           where: { isActive: true },
           include: {
@@ -58,29 +59,17 @@ export async function GET(request: NextRequest) {
         });
       });
 
-      const collectionRate = totalExpected > 0 ? (totalCollected / totalExpected) * 100 : 0;
-
       return {
-        classId: classData.id,
         className: classData.name,
         totalStudents,
-        totalExpected,
         totalCollected,
-        pending: totalExpected - totalCollected,
-        collectionRate: parseFloat(collectionRate.toFixed(2)),
-        paymentBreakdown: {
-          paid: paidCount,
-          pending: pendingCount,
-          overdue: overdueCount,
-        },
+        totalExpected,
+        totalPending: totalExpected - totalCollected,
+        monthlyFee: classData.feeStructure?.totalMonthlyFee || 0,
       };
     });
 
-    return successResponse({
-      month,
-      year,
-      classWiseData,
-    });
+    return successResponse(classWiseData);
   } catch (error) {
     console.error('Fetch class-wise data error:', error);
     return errorResponse('An error occurred while fetching class-wise data', 500);

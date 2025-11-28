@@ -142,10 +142,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return notFoundResponse('Student not found');
     }
 
-    // Soft delete (set isActive to false)
-    await prisma.student.update({
+    // Permanently delete student from database
+    await prisma.student.delete({
       where: { id: studentId },
-      data: { isActive: false },
     });
 
     return successResponse({ message: 'Student deleted successfully' });

@@ -49,10 +49,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return successResponse({
-      year,
-      monthlyData,
-    });
+    return successResponse(monthlyData);
   } catch (error) {
     console.error('Fetch monthly trend error:', error);
     return errorResponse('An error occurred while fetching monthly trend', 500);

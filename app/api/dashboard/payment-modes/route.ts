@@ -41,28 +41,16 @@ export async function GET(request: NextRequest) {
     const paymentModeData = paymentModes.map((mode) => {
       const records = paidRecords.filter((r) => r.paymentMode === mode);
       const totalAmount = records.reduce((sum, r) => sum + r.amountPaid, 0);
-      const count = records.length;
+      const transactionCount = records.length;
 
       return {
         mode,
-        count,
+        transactionCount,
         totalAmount,
       };
     });
 
-    // Calculate totals
-    const totalTransactions = paidRecords.length;
-    const totalAmount = paidRecords.reduce((sum, r) => sum + r.amountPaid, 0);
-
-    return successResponse({
-      month,
-      year,
-      paymentModeData,
-      summary: {
-        totalTransactions,
-        totalAmount,
-      },
-    });
+    return successResponse(paymentModeData);
   } catch (error) {
     console.error('Fetch payment modes data error:', error);
     return errorResponse('An error occurred while fetching payment modes data', 500);
