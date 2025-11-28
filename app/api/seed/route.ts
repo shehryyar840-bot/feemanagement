@@ -5,7 +5,7 @@ import { hash } from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { successResponse, errorResponse } from '@/lib/api-response';
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Security check - only allow in development or with secret key
     const { searchParams } = new URL(request.url);
