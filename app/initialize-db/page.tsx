@@ -3,10 +3,21 @@
 import { useState } from 'react';
 import { Database, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
+interface Credentials {
+  admin?: {
+    email: string;
+    password: string;
+  };
+  teacher?: {
+    email: string;
+    password: string;
+  };
+}
+
 export default function InitializeDBPage() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
-  const [credentials, setCredentials] = useState<any>(null);
+  const [credentials, setCredentials] = useState<Credentials | null>(null);
 
   const initializeDatabase = async () => {
     setStatus('loading');

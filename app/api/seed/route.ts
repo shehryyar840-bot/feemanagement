@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     // Create admin user
     const hashedPassword = await hash('password123', 10);
 
-    const admin = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email: 'admin@school.com',
         password: hashedPassword,
