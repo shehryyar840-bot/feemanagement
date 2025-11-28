@@ -55,6 +55,8 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       <aside
         className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 shadow-lg transition-all duration-300 z-40 ${
           isOpen ? 'w-64' : 'w-20'
+        } ${
+          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Header */}
