@@ -46,11 +46,15 @@ export default function ReportsPage() {
           dashboardApi.getClassWiseStats(selectedYear),
           dashboardApi.getPaymentModeStats(selectedYear),
         ]);
-        setMonthlyTrend(monthly);
-        setClassWiseStats(classWise);
-        setPaymentModeStats(paymentMode);
+        setMonthlyTrend(Array.isArray(monthly) ? monthly : []);
+        setClassWiseStats(Array.isArray(classWise) ? classWise : []);
+        setPaymentModeStats(Array.isArray(paymentMode) ? paymentMode : []);
       } catch (error) {
         console.error('Failed to load reports:', error);
+        // Set empty arrays on error
+        setMonthlyTrend([]);
+        setClassWiseStats([]);
+        setPaymentModeStats([]);
       }
     };
 
