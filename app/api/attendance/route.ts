@@ -1,6 +1,6 @@
 // app/api/attendance/route.ts
 import { NextRequest } from 'next/server';
-import { Prisma } from '@prisma/client';
+import { Prisma, AttendanceStatus } from '@prisma/client';
 import { authenticateRequest } from '@/lib/middleware';
 import { successResponse, unauthorizedResponse, errorResponse } from '@/lib/api-response';
 import prisma from '@/lib/prisma';
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (status) {
-      where.status = status as Prisma.AttendanceStatus;
+      where.status = status as AttendanceStatus;
     }
 
     const attendance = await prisma.attendance.findMany({
